@@ -1,0 +1,42 @@
+{
+  "name": "sql-query-optimizer",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.2.2",
+    "@testing-library/user-event": "^12.1.10",
+    "axios": "^0.21.2",
+    "dagre-d3-react": "^0.2.4",
+    "react": "^17.0.1",
+    "react-bootstrap": "^1.4.0",
+    "react-dom": "^17.0.1",
+    "react-scripts": "4.0.0",
+    "web-vitals": "^0.2.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "yarn clean && react-scripts build",
+    "clean": "rimraf ./build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": []
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2"
+  },
+  "proxy": "http://localhost:5000"
+}

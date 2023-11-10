@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "picasso-api"
+version = "0.1.0"
+description = "Backend for sql query visualizer."
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+flask = "^1.1.2"
+python-dotenv = "^0.15.0"
+psycopg2 = "^2.8.6"
+numpy = "^1.19.4"
+sqlparse = "^0.4.1"
+networkx = "^2.5"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

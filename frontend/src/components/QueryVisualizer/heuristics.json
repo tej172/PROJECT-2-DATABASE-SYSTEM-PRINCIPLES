@@ -1,0 +1,35 @@
+{
+  "Hash Join": {
+    "description": "This join method is used when the join condition uses an equality operator '=' and both sides of the relations are large."
+  },
+  "Merge Joins": {
+    "description": "This join method is similar to hash join except that both relations are sorted. Could be implemented when cost savings compared to hash join is greater than cost to Sort each relation."
+  },
+  "Nested Loop Joins": {
+    "description": "This join method is used if one side of the relation has only a few rows or if the join operator does not use an equality operator '='."
+  },
+  "Seq Scan": {
+    "description": "This access method is used for retrieval of large portions (approximately > 5-10%) of a relation."
+  },
+  "Index Scan": {
+    "description": "This access method is used when only a few rows of a relation are to be accessed from a relation."
+  },
+  "Bitmap Scan": {
+    "description": "This access method is used when the number of rows to be read from a relation is too much for index scan to be efficient but too little for sequential scan."
+  },
+  "Sort": {
+    "description": "Used when output or relation is required to be sorted. Often used before Merge Joins."
+  },
+  "Aggregate": {
+    "description": "This operation is used to compute single results from multiple input rows. E.g., aggregate functions used: COUNT, SUM, AVG (AVERAGE), MAX (MAXIMUM), and MIN (MINIMUM)."
+  },
+  "Gather Merge": {
+    "description": "This operation indicates that the portion of the plan below it is run in parallel."
+  },
+  "Hash": {
+    "description": "This operation is used to hash rows of a subtree on their join key values into a hash table before Hash Join."
+  },
+  "Incremental Sort": {
+    "description": "This operation is used to accelerate sorting data when data sorted from earlier parts of a query are already sorted."
+  }
+}
