@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import fs from "fs/promises";
+// import fs from "fs/promises";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
@@ -31,42 +31,42 @@ const FormInput = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
 
-  // Example queries folder
-  const exampleQueriesFolder = "sample_queries";
+  // // Example queries folder
+  // const exampleQueriesFolder = "sample_queries";
 
-  useEffect(() => {
-    // Load example queries on component mount
-    loadExampleQueries();
-  }, []);
+  // useEffect(() => {
+  //   // Load example queries on component mount
+  //   loadExampleQueries();
+  // }, []);
 
-  const loadExampleQueries = async () => {
-    try {
-      const files = await fs.readdir(exampleQueriesFolder);
+  // const loadExampleQueries = async () => {
+  //   try {
+  //     const files = await fs.readdir(exampleQueriesFolder);
 
-      const queries = await Promise.all(
-        files.map(async (file) => {
-          const content = await fs.readFile(
-            `${exampleQueriesFolder}/${file}`,
-            "utf-8"
-          );
-          return content.trim(); // Trim whitespace
-        })
-      );
+  //     const queries = await Promise.all(
+  //       files.map(async (file) => {
+  //         const content = await fs.readFile(
+  //           `${exampleQueriesFolder}/${file}`,
+  //           "utf-8"
+  //         );
+  //         return content.trim(); // Trim whitespace
+  //       })
+  //     );
 
-      setExampleQueries(queries);
-    } catch (error) {
-      console.error("Error loading example queries:", error);
-    }
-  };
+  //     setExampleQueries(queries);
+  //   } catch (error) {
+  //     console.error("Error loading example queries:", error);
+  //   }
+  // };
 
-  const setExampleQuery = (exampleQuery) => {
-    setInput({ ...input, query: exampleQuery });
-  };
+  // const setExampleQuery = (exampleQuery) => {
+  //   setInput({ ...input, query: exampleQuery });
+  // };
 
-  const setExampleQueries = (queries) => {
-    // Set example queries in the state
-    console.log("Loaded example queries:", queries);
-  };
+  // const setExampleQueries = (queries) => {
+  //   // Set example queries in the state
+  //   console.log("Loaded example queries:", queries);
+  // };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -302,7 +302,7 @@ const FormInput = () => {
                   <Col md={6}>
                     <Button
                       variant="primary"
-                      // type="submit"
+                      type="submit"
                       className="w-100 mt-3"
                       style={{ backgroundColor: "#9a6dad" }}
                     >

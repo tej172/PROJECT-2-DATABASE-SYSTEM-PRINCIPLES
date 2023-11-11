@@ -27,7 +27,8 @@ const QueryVisualizer = (props) => {
         const nodeType = node.node_type;
         nodes.push({
           id: node.id,
-          label: `${nodeType}\n`,
+          // label: `${nodeType}\n`,
+          label: `${node.node_type}\nTable: ${node.id}\n`,
           class: `${styles.queryNode}`,
         });
       });
