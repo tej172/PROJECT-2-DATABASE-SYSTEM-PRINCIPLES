@@ -1,5 +1,7 @@
 from flask import Flask, request
 
+import re
+
 from constant.constants import (
     var_prefix_to_table,
     equality_comparators,
@@ -23,7 +25,7 @@ from sqlparser import *
 from generator import Generator
 from query_visualizer_explainer import *
 from custom_errors import *
-
+from werkzeug.debug import DebuggedApplication
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -34,10 +36,13 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object("config.Config")
 
+if __name__ == '__main__':
+    app.debug = True
+    app.wsgi_app = DebuggedApplication(app.wsgi_app, evalex=True)
 
 @app.route("/")
 def hello():
-    return "Hey, you're not supposed to come here! But if you find this, please give us extra marks, thanks! (:"
+    return "I am Changed 2(:"
 
 
 """ #################################################################### 
@@ -51,13 +56,20 @@ def get_plans():
         # Gets the request data from the frontend
         request_data = request.json
         sql_query = request_data["query"]
+        print("Received query:", sql_query) 
 
         # Gets the query execution plan (qep) recommended by postgres for this query and also the graph and explanation
         qep_sql_string = create_qep_sql(sql_query)
-        original_qep, original_graph, original_explanation = execute_plan(
-            qep_sql_string
-        )
+        ctid_sql_string = create_ctid_sql(sql_query)
+        
+        print("Revised query:", qep_sql_string) 
+        print("Revised query:", ctid_sql_string) 
 
+        original_qep, original_graph, original_explanation, ctid = execute_plan(
+            qep_sql_string, ctid_sql_string
+        )
+        print("here?")
+        
         # Get the values and selectivity of various attributes for the original query
         original_predicate_selectivity_data = []
 
@@ -82,7 +94,7 @@ def get_plans():
                         "new_selectivity": None,
                     }
                 )
-
+        print("here1?")
         # Add the original query and its details into the dictionary that will contain all queries
         all_generated_plans = {
             0: {
@@ -92,7 +104,7 @@ def get_plans():
                 "predicate_selectivity_data": original_predicate_selectivity_data,
                 "estimated_cost_per_row": calculate_estimated_cost_per_row(
                     original_qep
-                ),
+                )
             }
         }
 
@@ -134,12 +146,14 @@ def get_plans():
         # get the best plan out of all the generated plans
         best_plan_id = get_best_plan_id(all_generated_plans)
 
+        print("can i get here?")
         # clean out the date objects for json serializability
         data = {
             "data": all_generated_plans,
             "best_plan_id": best_plan_id,
             "status": "Successfully executed query.",
             "error": False,
+            "ctid" : ctid,
         }
         clean_json(data)
 
@@ -151,6 +165,7 @@ def get_plans():
         return {
             "status": "Error in get_plans() - Unable to get plans for the query.",
             "error": True,
+            "message" : str(e),
         }
 
 
@@ -182,21 +197,69 @@ used to get the qep, graph and explanation for a given query string
 #################################################################### """
 
 
-def execute_plan(qep_sql_string):
+def execute_plan(qep_sql_string, ctid_sql_string):
     try:
         # Get the optimal qep
         qep = query(qep_sql_string, explain=True)
-        qep = json.dumps(ast.literal_eval(str(qep)))
+        ctid = query(ctid_sql_string, ctid = True)
 
+        qep = json.dumps(ast.literal_eval(str(qep)))
+        
         graph, explanation = visualize_explain_query(qep)
-        # explanation = postorder_qep(qep)
         qep = json.loads(qep)
-        return qep, graph, explanation
+        ctid = visualize_ctid(ctid_sql_string, ctid)
+
+        return qep, graph, explanation, ctid
     except CustomError as e:
         raise CustomError(str(e))
     except:
         raise CustomError(
             "Error in execute_plan() - Unable to get QEP, graph, explanation."
+        )
+
+def create_ctid_sql(sql_query):
+    try:
+        match = re.search(r'SELECT\s+(.*?)\s+FROM', sql_query, re.IGNORECASE)
+        if match:
+            columns_str = match.group(1)
+            # Split the columns based on commas and remove leading/trailing whitespaces
+            columns_list = [col.strip() for col in columns_str.split(',')]
+            print(f"columns_list1: {columns_list}")
+        else:
+            raise CustomError("Error in extract_columns() - No SELECT statement found.")
+        
+        for column in columns_list:
+            if re.search(r'\bctid\b', column, re.IGNORECASE):
+                break
+        else:
+            columns_list.insert(0, "ctid")
+        
+        print(f"columns_list2: {columns_list}")
+        
+        select_statement = f"SELECT {', '.join(columns_list)}"
+
+        #TODO: Query must always have SELECT and always followed up by FROM afterwards
+        select_match = re.search(r'\bSELECT\b', sql_query, re.IGNORECASE)
+        before_select = sql_query[:select_match.start()]
+        from_match = re.search(r'\bFROM\b', sql_query, re.IGNORECASE)
+        after_select = sql_query[from_match.start():]
+
+        print(f"before select: {before_select}")
+        print(f"after select: {after_select}")
+
+        # Create the updated query
+        updated_query = before_select + select_statement + " " + after_select
+        print(f"updated query: {updated_query}")
+
+        print(updated_query)
+        
+
+        return updated_query
+    except CustomError as e:
+        raise CustomError(str(e))
+    except:
+        raise CustomError(
+            "Error in create_ctid_sql() - Unable to create sql_query string."
         )
 
 

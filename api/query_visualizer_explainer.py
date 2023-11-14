@@ -1,3 +1,5 @@
+import re
+import ast
 import json
 from sys import stderr
 import networkx as nx
@@ -9,6 +11,31 @@ from custom_errors import *
 Creates a graph, and a text explanation for a given query execution plan
 #################################################################### """
 
+def visualize_ctid(sql_query, res):
+    try:
+        #ctid always in column 0
+        # Extract columns from the SELECT statement
+
+        data_blocks = {}
+        for entry in res:
+            #TODO: Check must always have attribute after ctid
+            entry_attributes = entry[1:]
+            ctid_numbers = str_to_tuple(entry[0])
+
+            if ctid_numbers[0] not in data_blocks:
+                data_blocks[ctid_numbers[0]] = {}
+
+            if ctid_numbers[1] in data_blocks[ctid_numbers[0]]:
+                raise ValueError("Two tuples is occupying the same page")
+            else:
+                data_blocks[ctid_numbers[0]][ctid_numbers[1]] = entry_attributes
+        return data_blocks    
+    except CustomError as e:
+        raise CustomError(str(e))
+    except:
+        raise CustomError("Error in extract_columns() - Unable to extract columns.")
+
+    return 0
 
 def visualize_explain_query(plan):
     try:
@@ -187,3 +214,13 @@ def string_unique_id(unique_id):
         raise CustomError(
             "Error in string_unique_id() - Unable to generate unique id for QEP nodes."
         )
+
+def str_to_tuple(str):
+    try:
+        result_tuple = ast.literal_eval(str)
+        if isinstance(result_tuple, tuple):
+            return result_tuple
+        else:
+            raise ValueError("The string does not represent a valid tuple.")
+    except (ValueError, SyntaxError) as e:
+        print(f"Error: {e}")

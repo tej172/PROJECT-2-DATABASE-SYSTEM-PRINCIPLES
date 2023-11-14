@@ -75,6 +75,7 @@ const FormInput = () => {
       return { ...oldState, status: "Generating output...", error: false };
     });
 
+    console.log(input)
     if (input.query !== "") {
       axios
         .post("/generate", input)
@@ -91,13 +92,13 @@ const FormInput = () => {
             });
             setShowError(true);
           } else {
-            console.log(response.data);
             setOutput((oldState) => {
               return {
                 ...oldState,
                 data: response.data["data"],
                 bestPlanId: response.data["best_plan_id"],
                 status: response.data["status"],
+                ctid: response.data["ctid"],
                 error: false,
               };
             });
@@ -168,6 +169,7 @@ const FormInput = () => {
       data: {},
       best_plan_id: 1,
       status: "",
+      ctid: {},
       error: false,
     });
   };
@@ -315,7 +317,7 @@ const FormInput = () => {
           </Form.Group>
         </Form.Row>
       </Form>
-
+                
       <FormOutput output={output} />
     </>
   );

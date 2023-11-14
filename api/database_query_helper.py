@@ -42,7 +42,7 @@ helper that processes a query and returns the data
 #################################################################### """
 
 
-def query(sql_string, explain=False):
+def query(sql_string, explain=False, ctid = False):
     conn, cur = connect()
 
     try:
@@ -50,11 +50,13 @@ def query(sql_string, explain=False):
         if conn is not None:
             cur.execute(sql_string)
             data = cur.fetchall()
-
+            
             conn.close()
 
         if explain:
             return data[0][0][0]
+        elif ctid:
+            return data
         else:
             return data[0]
     except CustomError as e:
