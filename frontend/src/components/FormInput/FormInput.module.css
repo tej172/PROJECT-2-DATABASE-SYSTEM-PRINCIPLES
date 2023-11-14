@@ -87,9 +87,21 @@
 .largeText {
   display: flex;
   font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 1rem;
 }
 
 .smallText {
   display: flex;
   font-size: 18px;
+  margin-bottom: 1rem;
+}
+.customOutlinePurple {
+  border-color: #9a6dad;
+  color: #9a6dad;
+}
+
+.customOutlinePurple:hover {
+  background-color: #9a6dad;
+  color: white;
 }
