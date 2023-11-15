@@ -16,7 +16,7 @@ import numpy as np
 import string
 import re
 from datetime import date
-
+import sqlparse
 
 # our own python scripts
 from database_query_helper import *
@@ -60,15 +60,18 @@ def get_plans():
 
         # Gets the query execution plan (qep) recommended by postgres for this query and also the graph and explanation
         qep_sql_string = create_qep_sql(sql_query)
-        ctid_sql_string = create_ctid_sql(sql_query)
+        #tables = create_schema_sql(sql_query)
+        #ctid_sql_string = create_ctid_sql(sql_query, tables)
         
         print("Revised query:", qep_sql_string) 
-        print("Revised query:", ctid_sql_string) 
+        # print("Revised query:", ctid_sql_string) 
+        # print(f"tables: {tables}")
 
-        original_qep, original_graph, original_explanation, ctid = execute_plan(
-            qep_sql_string, ctid_sql_string
+        original_qep, original_graph, original_explanation, schema_dict= execute_plan(
+            qep_sql_string #, ctid_sql_string, tables
         )
-        print("here?")
+        
+        #print(f"schema: {schema}")
         
         # Get the values and selectivity of various attributes for the original query
         original_predicate_selectivity_data = []
@@ -153,7 +156,9 @@ def get_plans():
             "best_plan_id": best_plan_id,
             "status": "Successfully executed query.",
             "error": False,
-            "ctid" : ctid,
+            "schema_dict" : schema_dict,
+            #"ctid" : ctid,
+            #"schema" : schema
         }
         clean_json(data)
 
@@ -197,19 +202,33 @@ used to get the qep, graph and explanation for a given query string
 #################################################################### """
 
 
-def execute_plan(qep_sql_string, ctid_sql_string):
+def execute_plan(qep_sql_string):
     try:
         # Get the optimal qep
         qep = query(qep_sql_string, explain=True)
-        ctid = query(ctid_sql_string, ctid = True)
+        schema_query = "SELECT tablename, pg_total_relation_size(format('%I.%I', schemaname, tablename)) AS total_length_of_tuples FROM pg_tables WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema' ORDER BY total_length_of_tuples DESC"
+        schema_size = query(schema_query, ctid=True)
+        schema_dict = dict(schema_size)
+        print(f"schema_dict: {schema_dict}")
+        #ctid = query(ctid_sql_string, ctid = True)
+
+        print(print(f"qep: {qep}"))
+
+        for key, value in qep.items():
+            print(f"key: {key}")
+            print(f"value: {value}")
+
+        # schema = {}
+        # for table, schema_sql in tables.items():
+        #     schema[table] = query(schema_sql, ctid=True)
 
         qep = json.dumps(ast.literal_eval(str(qep)))
         
         graph, explanation = visualize_explain_query(qep)
         qep = json.loads(qep)
-        ctid = visualize_ctid(ctid_sql_string, ctid)
+        #ctid = visualize_ctid(ctid_sql_string, ctid, schema)
 
-        return qep, graph, explanation, ctid
+        return qep, graph, explanation, schema_dict #, ctid, schema
     except CustomError as e:
         raise CustomError(str(e))
     except:
@@ -217,44 +236,104 @@ def execute_plan(qep_sql_string, ctid_sql_string):
             "Error in execute_plan() - Unable to get QEP, graph, explanation."
         )
 
-def create_ctid_sql(sql_query):
+def create_schema_sql(sql_query):
     try:
-        match = re.search(r'SELECT\s+(.*?)\s+FROM', sql_query, re.IGNORECASE)
-        if match:
-            columns_str = match.group(1)
-            # Split the columns based on commas and remove leading/trailing whitespaces
-            columns_list = [col.strip() for col in columns_str.split(',')]
-            print(f"columns_list1: {columns_list}")
-        else:
-            raise CustomError("Error in extract_columns() - No SELECT statement found.")
+        parsed_query = sqlparse.parse(sql_query)[0].tokens
+
+        for i, item in enumerate(parsed_query):
+            print(f"item: {item}")
+            if isinstance(item, sqlparse.sql.Token) and str(item).upper() == "FROM":
+                table_str = str(parsed_query[i+2])
+                tables = list(table_str.split(', '))
+
+                #check if there's nested loop
+                dict_sql = {}
+
+                #TODO: What if nested loop?
+                for table in tables:
+                #     #check if there's nested loop
+                #     if "FROM" in table.upper():
+                #         print(f"nested_parsed_sql: {str(table)}")
+                #         pattern = r'\((.*?)\).*\((.*?)\)'
+                #         match = re.search(pattern, str(table))
+                #         print(f"match: {match}")
+                #         print(f"match: {match.group(1)}")
+                #         print(f"nested_parsed_sql: {str(table)}")
+                #         nested_parsed_query = sqlparse.parse(match.group(1))[0].token_matching
+                #         print(f"nested_parsed_sql: {nested_parsed_query}")
+                #         print(f"i have nested loop: {table}")
+                #         for j, nested_item in enumerate(nested_parsed_query):
+                #             print(f"nested_item: {nested_item}")
+
+                            # if isinstance(item, sqlparse.sql.Token) and str(item).upper() == "FROM":
+                            #     nested_table_str = str(nested_parsed_query[i+2])
+                            #     nested_tables = list(nested_table_str.split(', '))
+                            #     print(f"nested_tables: {nested_tables}")
+
+
+                    if "as" in table.lower():
+                        key = get_word_after_as(table)
+                        tableName = get_first_word(table)
+                        dict_sql[key] = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{tableName}' ORDER BY ordinal_position"
+                    else:
+                        dict_sql[table] = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}' ORDER BY ordinal_position"
+                
+                print(f"final dict: {dict_sql}")
         
-        for column in columns_list:
-            if re.search(r'\bctid\b', column, re.IGNORECASE):
-                break
-        else:
-            columns_list.insert(0, "ctid")
         
-        print(f"columns_list2: {columns_list}")
-        
-        select_statement = f"SELECT {', '.join(columns_list)}"
+        return dict_sql
 
-        #TODO: Query must always have SELECT and always followed up by FROM afterwards
-        select_match = re.search(r'\bSELECT\b', sql_query, re.IGNORECASE)
-        before_select = sql_query[:select_match.start()]
-        from_match = re.search(r'\bFROM\b', sql_query, re.IGNORECASE)
-        after_select = sql_query[from_match.start():]
+        raise CustomError("FROM clause is faulty.")
+    except CustomError as e:
+        raise CustomError(str(e))
+    except:
+        raise CustomError(
+            "Error in create_schema_sql() - Unable to create sql_query string."
+        )
 
-        print(f"before select: {before_select}")
-        print(f"after select: {after_select}")
+def get_word_after_as(str):
+    match = re.search(r'\bAS\s+(\w+)', str, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    else:
+        return None
 
-        # Create the updated query
-        updated_query = before_select + select_statement + " " + after_select
-        print(f"updated query: {updated_query}")
+def get_first_word(str):
+    words = str.split()
+    if words:
+        return words[0]
+    else:
+        return None
 
-        print(updated_query)
-        
+def create_ctid_sql(sql_query, tables):
+    try:
+        parsed_query = sqlparse.parse(sql_query)[0].tokens
 
-        return updated_query
+        for i, item in enumerate(parsed_query):
+            if isinstance(item, sqlparse.sql.Token) and str(item).upper() == "SELECT":
+                col_str = str(parsed_query[i+2])
+                cols = list(col_str.split(', '))
+
+                for i, col in enumerate(cols):
+                    if "ctid" in col.lower():
+                        cols.pop(i)
+
+                col_insert = []
+                for table in tables:
+                    col_insert.append(f"{table}.ctid")
+
+                select_statement = f"SELECT {', '.join(col_insert)},"
+
+                #TODO: Query must always have SELECT and always followed up by FROM afterwards, what if nested loop?
+                select_match = sql_query.upper().find("SELECT")
+                before_select = sql_query[:select_match]
+                from_match = sql_query.find(cols[0])
+                after_select = sql_query[from_match:]
+                
+                updated_query = before_select + select_statement + " " + after_select
+                
+                return updated_query
+        raise CustomError("SELECT phrase is faulty.")
     except CustomError as e:
         raise CustomError(str(e))
     except:

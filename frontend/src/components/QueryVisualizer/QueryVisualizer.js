@@ -3,6 +3,7 @@ import DagreGraph from "dagre-d3-react";
 import styles from "./QueryVisualizer.module.css";
 import Col from "react-bootstrap/Col";
 import heuristicsData from "./heuristics.json";
+import DiskVisualizer from "./DiskVisualizer";
 
 const QueryVisualizer = (props) => {
   const nodes = [];
@@ -132,10 +133,37 @@ const QueryVisualizer = (props) => {
 
       <Col md={6}>
         <div className={styles.tooltipContainer}>
+        <div className={styles.explanationWrapper} style={{marginBottom: "3%"}}>
+          <h3 style={{ textAlign: "center" }}>QEP Explanations</h3>
+          <p style={{ textAlign: "center" }}>
+            Text explanation of the QEP for each steps.
+          </p>
+          <hr />
+          {/* Use the parseExplanation prop passed from FormOutput */}
+          {props.parseExplanation(props.planId)}
+        </div>
+
+        {/* MULAI DISINI */}
+        <div
+            className={`${styles.graphTooltip} ${
+              showTooltip ? "" : styles.hideTooltip
+            }`
+          }
+          style={{marginBottom: "3%"}}
+          >
+            <h3 style={{ textAlign: "center" }}>Disk Visualization</h3>
+            <p style={{ textAlign: "center" }}>
+              Comparing accessed rows to total rows in a table.
+            </p>
+            <hr />
+            <DiskVisualizer output={props.output} selectedNode = {selectedNode}/>
+          </div>
+
           <div
             className={`${styles.graphTooltip} ${
               showTooltip ? "" : styles.hideTooltip
             }`}
+            style={{marginBottom: "3%"}}
           >
             <h3 style={{ textAlign: "center" }}>Additional Information</h3>
             <p style={{ textAlign: "center" }}>
@@ -150,24 +178,7 @@ const QueryVisualizer = (props) => {
               )}
               {selectedNode && displayHeuristicsInfo(selectedNode.node_type)}
             </span>
-            <button
-              className={styles.hideTooltipButton}
-              onClick={() => {
-                setShowTooltip(false);
-              }}
-            >
-              Hide
-            </button>
           </div>
-        </div>
-        <div className={styles.explanationWrapper}>
-          <h3 style={{ textAlign: "center" }}>QEP Explanations</h3>
-          <p style={{ textAlign: "center" }}>
-            Text explanation of the QEP for each steps.
-          </p>
-          <hr />
-          {/* Use the parseExplanation prop passed from FormOutput */}
-          {props.parseExplanation(props.planId)}
         </div>
       </Col>
     </div>

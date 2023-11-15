@@ -23,6 +23,8 @@ const FormInput = () => {
     data: {},
     bestPlanId: 1,
     status: "",
+    ctid: {},
+    schema: {},
     error: false,
   });
 
@@ -98,7 +100,7 @@ const FormInput = () => {
                 data: response.data["data"],
                 bestPlanId: response.data["best_plan_id"],
                 status: response.data["status"],
-                ctid: response.data["ctid"],
+                schema_dict: response.data["schema_dict"],
                 error: false,
               };
             });
@@ -169,7 +171,7 @@ const FormInput = () => {
       data: {},
       best_plan_id: 1,
       status: "",
-      ctid: {},
+      schema_dict: {},
       error: false,
     });
   };

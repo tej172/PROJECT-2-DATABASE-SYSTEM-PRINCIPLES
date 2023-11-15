@@ -2,6 +2,7 @@ import psycopg2
 import os
 from sys import stderr
 from custom_errors import *
+from flask import Flask, render_template
 
 from dotenv import load_dotenv
 
@@ -48,9 +49,12 @@ def query(sql_string, explain=False, ctid = False):
     try:
         data = ""
         if conn is not None:
+            print("im inside query")
             cur.execute(sql_string)
             data = cur.fetchall()
-            
+            print(f"data: {data}")
+            for item in data:
+                print(f"item: {item}")
             conn.close()
 
         if explain:

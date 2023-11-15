@@ -395,11 +395,6 @@ const FormOutput = (props) => {
         Click on a node in the graph for more information.
       </p>
       <hr />
-      {/* MULAI DISINI */}
-      
-      <DiskVisualizer ctid={props.output.ctid}></DiskVisualizer>
-      <h1>Hi?</h1>
-
       <Form.Row>
         <Form.Group as={Col} controlId="formGraph1">
           <QueryVisualizer
