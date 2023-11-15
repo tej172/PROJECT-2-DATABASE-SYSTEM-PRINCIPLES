@@ -2,6 +2,7 @@ import psycopg2
 import os
 from sys import stderr
 from custom_errors import *
+from flask import Flask, render_template
 
 from dotenv import load_dotenv
 
@@ -42,19 +43,24 @@ helper that processes a query and returns the data
 #################################################################### """
 
 
-def query(sql_string, explain=False):
+def query(sql_string, explain=False, ctid = False):
     conn, cur = connect()
 
     try:
         data = ""
         if conn is not None:
+            print("im inside query")
             cur.execute(sql_string)
             data = cur.fetchall()
-
+            print(f"data: {data}")
+            for item in data:
+                print(f"item: {item}")
             conn.close()
 
         if explain:
             return data[0][0][0]
+        elif ctid:
+            return data
         else:
             return data[0]
     except CustomError as e:

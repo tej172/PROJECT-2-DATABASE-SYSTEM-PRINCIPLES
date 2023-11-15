@@ -1,5 +1,7 @@
 from flask import Flask, request
 
+import re
+
 from constant.constants import (
     var_prefix_to_table,
     equality_comparators,
@@ -14,7 +16,7 @@ import numpy as np
 import string
 import re
 from datetime import date
-
+import sqlparse
 
 # our own python scripts
 from database_query_helper import *
@@ -23,7 +25,7 @@ from sqlparser import *
 from generator import Generator
 from query_visualizer_explainer import *
 from custom_errors import *
-
+from werkzeug.debug import DebuggedApplication
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -34,10 +36,13 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object("config.Config")
 
+if __name__ == '__main__':
+    app.debug = True
+    app.wsgi_app = DebuggedApplication(app.wsgi_app, evalex=True)
 
 @app.route("/")
 def hello():
-    return "Hey, you're not supposed to come here! But if you find this, please give us extra marks, thanks! (:"
+    return "I am Changed 2(:"
 
 
 """ #################################################################### 
@@ -51,13 +56,23 @@ def get_plans():
         # Gets the request data from the frontend
         request_data = request.json
         sql_query = request_data["query"]
+        print("Received query:", sql_query) 
 
         # Gets the query execution plan (qep) recommended by postgres for this query and also the graph and explanation
         qep_sql_string = create_qep_sql(sql_query)
-        original_qep, original_graph, original_explanation = execute_plan(
-            qep_sql_string
-        )
+        #tables = create_schema_sql(sql_query)
+        #ctid_sql_string = create_ctid_sql(sql_query, tables)
+        
+        print("Revised query:", qep_sql_string) 
+        # print("Revised query:", ctid_sql_string) 
+        # print(f"tables: {tables}")
 
+        original_qep, original_graph, original_explanation, schema_dict= execute_plan(
+            qep_sql_string #, ctid_sql_string, tables
+        )
+        
+        #print(f"schema: {schema}")
+        
         # Get the values and selectivity of various attributes for the original query
         original_predicate_selectivity_data = []
 
@@ -82,7 +97,7 @@ def get_plans():
                         "new_selectivity": None,
                     }
                 )
-
+        print("here1?")
         # Add the original query and its details into the dictionary that will contain all queries
         all_generated_plans = {
             0: {
@@ -92,7 +107,7 @@ def get_plans():
                 "predicate_selectivity_data": original_predicate_selectivity_data,
                 "estimated_cost_per_row": calculate_estimated_cost_per_row(
                     original_qep
-                ),
+                )
             }
         }
 
@@ -134,12 +149,16 @@ def get_plans():
         # get the best plan out of all the generated plans
         best_plan_id = get_best_plan_id(all_generated_plans)
 
+        print("can i get here?")
         # clean out the date objects for json serializability
         data = {
             "data": all_generated_plans,
             "best_plan_id": best_plan_id,
             "status": "Successfully executed query.",
             "error": False,
+            "schema_dict" : schema_dict,
+            #"ctid" : ctid,
+            #"schema" : schema
         }
         clean_json(data)
 
@@ -151,6 +170,7 @@ def get_plans():
         return {
             "status": "Error in get_plans() - Unable to get plans for the query.",
             "error": True,
+            "message" : str(e),
         }
 
 
@@ -186,17 +206,139 @@ def execute_plan(qep_sql_string):
     try:
         # Get the optimal qep
         qep = query(qep_sql_string, explain=True)
-        qep = json.dumps(ast.literal_eval(str(qep)))
+        schema_query = "SELECT tablename, pg_total_relation_size(format('%I.%I', schemaname, tablename)) AS total_length_of_tuples FROM pg_tables WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema' ORDER BY total_length_of_tuples DESC"
+        schema_size = query(schema_query, ctid=True)
+        schema_dict = dict(schema_size)
+        print(f"schema_dict: {schema_dict}")
+        #ctid = query(ctid_sql_string, ctid = True)
 
+        print(print(f"qep: {qep}"))
+
+        for key, value in qep.items():
+            print(f"key: {key}")
+            print(f"value: {value}")
+
+        # schema = {}
+        # for table, schema_sql in tables.items():
+        #     schema[table] = query(schema_sql, ctid=True)
+
+        qep = json.dumps(ast.literal_eval(str(qep)))
+        
         graph, explanation = visualize_explain_query(qep)
-        # explanation = postorder_qep(qep)
         qep = json.loads(qep)
-        return qep, graph, explanation
+        #ctid = visualize_ctid(ctid_sql_string, ctid, schema)
+
+        return qep, graph, explanation, schema_dict #, ctid, schema
     except CustomError as e:
         raise CustomError(str(e))
     except:
         raise CustomError(
             "Error in execute_plan() - Unable to get QEP, graph, explanation."
+        )
+
+def create_schema_sql(sql_query):
+    try:
+        parsed_query = sqlparse.parse(sql_query)[0].tokens
+
+        for i, item in enumerate(parsed_query):
+            print(f"item: {item}")
+            if isinstance(item, sqlparse.sql.Token) and str(item).upper() == "FROM":
+                table_str = str(parsed_query[i+2])
+                tables = list(table_str.split(', '))
+
+                #check if there's nested loop
+                dict_sql = {}
+
+                #TODO: What if nested loop?
+                for table in tables:
+                #     #check if there's nested loop
+                #     if "FROM" in table.upper():
+                #         print(f"nested_parsed_sql: {str(table)}")
+                #         pattern = r'\((.*?)\).*\((.*?)\)'
+                #         match = re.search(pattern, str(table))
+                #         print(f"match: {match}")
+                #         print(f"match: {match.group(1)}")
+                #         print(f"nested_parsed_sql: {str(table)}")
+                #         nested_parsed_query = sqlparse.parse(match.group(1))[0].token_matching
+                #         print(f"nested_parsed_sql: {nested_parsed_query}")
+                #         print(f"i have nested loop: {table}")
+                #         for j, nested_item in enumerate(nested_parsed_query):
+                #             print(f"nested_item: {nested_item}")
+
+                            # if isinstance(item, sqlparse.sql.Token) and str(item).upper() == "FROM":
+                            #     nested_table_str = str(nested_parsed_query[i+2])
+                            #     nested_tables = list(nested_table_str.split(', '))
+                            #     print(f"nested_tables: {nested_tables}")
+
+
+                    if "as" in table.lower():
+                        key = get_word_after_as(table)
+                        tableName = get_first_word(table)
+                        dict_sql[key] = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{tableName}' ORDER BY ordinal_position"
+                    else:
+                        dict_sql[table] = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}' ORDER BY ordinal_position"
+                
+                print(f"final dict: {dict_sql}")
+        
+        
+        return dict_sql
+
+        raise CustomError("FROM clause is faulty.")
+    except CustomError as e:
+        raise CustomError(str(e))
+    except:
+        raise CustomError(
+            "Error in create_schema_sql() - Unable to create sql_query string."
+        )
+
+def get_word_after_as(str):
+    match = re.search(r'\bAS\s+(\w+)', str, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+def get_first_word(str):
+    words = str.split()
+    if words:
+        return words[0]
+    else:
+        return None
+
+def create_ctid_sql(sql_query, tables):
+    try:
+        parsed_query = sqlparse.parse(sql_query)[0].tokens
+
+        for i, item in enumerate(parsed_query):
+            if isinstance(item, sqlparse.sql.Token) and str(item).upper() == "SELECT":
+                col_str = str(parsed_query[i+2])
+                cols = list(col_str.split(', '))
+
+                for i, col in enumerate(cols):
+                    if "ctid" in col.lower():
+                        cols.pop(i)
+
+                col_insert = []
+                for table in tables:
+                    col_insert.append(f"{table}.ctid")
+
+                select_statement = f"SELECT {', '.join(col_insert)},"
+
+                #TODO: Query must always have SELECT and always followed up by FROM afterwards, what if nested loop?
+                select_match = sql_query.upper().find("SELECT")
+                before_select = sql_query[:select_match]
+                from_match = sql_query.find(cols[0])
+                after_select = sql_query[from_match:]
+                
+                updated_query = before_select + select_statement + " " + after_select
+                
+                return updated_query
+        raise CustomError("SELECT phrase is faulty.")
+    except CustomError as e:
+        raise CustomError(str(e))
+    except:
+        raise CustomError(
+            "Error in create_ctid_sql() - Unable to create sql_query string."
         )
 
 

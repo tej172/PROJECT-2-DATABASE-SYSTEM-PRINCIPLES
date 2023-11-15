@@ -1,3 +1,5 @@
+import re
+import ast
 import json
 from sys import stderr
 import networkx as nx
@@ -9,6 +11,58 @@ from custom_errors import *
 Creates a graph, and a text explanation for a given query execution plan
 #################################################################### """
 
+def visualize_ctid(sql_query, res, schema):
+    try:
+        #ctid always in column 0
+        # Extract columns from the SELECT statement
+        num_ctid = len(schema)
+        # print(f"num_ctid: {num_ctid}")
+        
+        data_blocks = {}
+        index = 0
+        prev_index_col = 0
+        for tables, column in schema.items():
+            # print(f"tables: {tables}")
+            data_blocks[tables] = {}
+            # print(f"data_blocks[tables] initial: {data_blocks}")
+            num_col = len(column)
+            # print(f"num_col: {num_col}")
+
+            for entry in res:
+                ctid = entry[index]
+                # print(f"ctid: {ctid}")
+                # print(f"type ctid: {type(ctid)}")
+                # print(f"entry: {entry}")
+                # print(f"type: {type(entry)}")
+                # print(f"len tuple: {len(entry)}")
+                ctid_numbers = str_to_tuple(ctid)
+                # print(f"ctid_numbers: {ctid_numbers}")
+                # print(f"data_blocks[tables]1: {data_blocks[tables]}")
+
+                if ctid_numbers[0] not in data_blocks[tables]:
+                    data_blocks[tables][ctid_numbers[0]] = {}
+                # print(f"data_blocks[tables]2: {data_blocks[tables]}")
+                if ctid_numbers[1] in data_blocks[tables][ctid_numbers[0]]:
+                    raise ValueError("Two tuples is occupying the same page")
+                else:
+                    # print(f"num_ctid + prev_index_col: {num_ctid + prev_index_col}")
+                    # print(f"res[num_ctid + prev_index_col: ] : {entry[3:]}")
+                    # print(f"to be inserted: {entry[(num_ctid + prev_index_col): (num_ctid + prev_index_col) + (num_col) ]}")
+                    # print(f"num_col: {num_col}")
+                    data_blocks[tables][ctid_numbers[0]][ctid_numbers[1]] = entry[(num_ctid + prev_index_col): (num_ctid + prev_index_col) + (num_col) ]
+            
+            # print(f"data_blocks: {data_blocks}")
+            prev_index_col = num_col
+            index+=1
+
+        print(f"data_blocks: {data_blocks}")
+        return data_blocks    
+    except CustomError as e:
+        raise CustomError(str(e))
+    except:
+        raise CustomError("Error in extract_columns() - Unable to extract columns.")
+
+    return 0
 
 def visualize_explain_query(plan):
     try:
@@ -24,6 +78,7 @@ def visualize_explain_query(plan):
 
         if "Plan" in plan:
             root = plan["Plan"]
+            print(f"root: {root}")
             root["id"] = string_unique_id(unique_id)
             root["depth"] = 0
             root_node = string_unique_id(unique_id)
@@ -37,6 +92,7 @@ def visualize_explain_query(plan):
             graph.add_node(
                 root["id"],
                 node_type=root["Node Type"],
+                plan_rows = root["Plan Rows"],
                 cost=root["Startup Cost"] + root["Total Cost"],
                 depth=root["depth"],
             )
@@ -62,6 +118,7 @@ def visualize_explain_query(plan):
                             graph.add_node(
                                 child["id"],
                                 node_type=child["Node Type"],
+                                plan_rows = child["Plan Rows"],
                                 cost=child["Startup Cost"] + child["Total Cost"],
                                 depth=depth,
                             )
@@ -187,3 +244,13 @@ def string_unique_id(unique_id):
         raise CustomError(
             "Error in string_unique_id() - Unable to generate unique id for QEP nodes."
         )
+
+def str_to_tuple(str):
+    try:
+        result_tuple = ast.literal_eval(str)
+        if isinstance(result_tuple, tuple):
+            return result_tuple
+        else:
+            raise ValueError("The string does not represent a valid tuple.")
+    except (ValueError, SyntaxError) as e:
+        print(f"Error: {e}")

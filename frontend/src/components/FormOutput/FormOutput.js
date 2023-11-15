@@ -6,6 +6,7 @@ import Toast from "react-bootstrap/Toast";
 
 import PlanComparison from "../PlanComparison/PlanComparison";
 import QueryVisualizer from "../QueryVisualizer/QueryVisualizer";
+import DiskVisualizer from "../QueryVisualizer/DiskVisualizer";
 
 import styles from "./FormOutput.module.css";
 
