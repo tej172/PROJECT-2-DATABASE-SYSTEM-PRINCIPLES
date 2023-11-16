@@ -128,12 +128,6 @@ const DiskVisualizer = (props) => {
             console.log(planRows)
             console.log("print planRows")
             const variant = "success"
-            console.log(targetTable)
-            console.log("print targetTable")
-            console.log(totalRow)
-            console.log("print totalRow")
-            console.log(planRows)
-            console.log("print planRows")
             
             additional_info[sourceIndex] = {"plan_rows" : sourceInfo.plan_rows, "total_rows": totalRow, "tables":targetTable};
             
@@ -183,10 +177,17 @@ const DiskVisualizer = (props) => {
             console.log(additional_info)
             console.log("print additional_info")
             
-            const planRows = additional_info[edge].plan_rows
-            const totalRow = additional_info[edge].total_rows
-            const targetTable = additional_info[edge].tables
-            const variant = "warning"
+            if (additional_info.hasOwnProperty(edge)){
+              var planRows = additional_info[edge].plan_rows
+              var totalRow = additional_info[edge].total_rows
+              var targetTable = additional_info[edge].tables
+              var variant = "warning"
+            }else{
+              var planRows = 0
+              var totalRow = 0
+              var targetTable = "N.A"
+              var variant = "warning"
+            }
             
             prevRow.push(planRows)
             //print out the first
