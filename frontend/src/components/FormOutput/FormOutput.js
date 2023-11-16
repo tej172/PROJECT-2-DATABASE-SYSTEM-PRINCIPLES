@@ -392,7 +392,10 @@ const FormOutput = (props) => {
       </Form.Row>
       <h3 style={{ textAlign: "center" }}>Graphs</h3>
       <p style={{ textAlign: "center" }}>
-        Click on a node in the graph for more information.
+        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
+          Click
+        </span>{" "}
+        on a node in the graph for more information.
       </p>
       <hr />
       <Form.Row>
