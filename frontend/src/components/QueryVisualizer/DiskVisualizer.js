@@ -5,10 +5,7 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row"
 import { OverlayTrigger, Button, Tooltip, Container, ProgressBar } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table';
-import heuristicsData from "./heuristics.json";
-import { renderToStaticMarkup } from 'react-dom/server';
 
-import Carousel from 'react-bootstrap/Carousel';
 const DiskVisualizer = (props) => {
   let nodes;
   let links;
@@ -87,11 +84,14 @@ const DiskVisualizer = (props) => {
         {Object.keys(edges)
         .reverse()
         .map((index) => {
-        
+
         const connectingEdges = edges[index]
         const sourceIndex = index 
         const sourceInfo = nodes[index]
-        
+        console.log(edges)
+        console.log("print edges")
+        console.log(index)
+        console.log("print index")
         console.log(sourceIndex)
         console.log("print sourceIndex")
         
@@ -110,11 +110,23 @@ const DiskVisualizer = (props) => {
           console.log("print sourceTarget")
           console.log(targetInfo)
           console.log("print targetInfo")
-
+          console.log(targetInfo.hasOwnProperty("plan_rows"))
+          console.log("checking boolean")
           if (!targetInfo.hasOwnProperty("plan_rows")){
+            console.log("Entering first condition")
             const targetTable = targetInfo.node_type
+            console.log(targetTable)
+            console.log("print targetTable")
+            console.log(schema_dict)
+            console.log("print schema_dict")
+            console.log(typeof(targetTable))
+            console.log("print typeof(targetTable")
             const totalRow = schema_dict[targetTable]
+            console.log(totalRow)
+            console.log("print totalRow")
             const planRows = sourceInfo.plan_rows
+            console.log(planRows)
+            console.log("print planRows")
             const variant = "success"
             console.log(targetTable)
             console.log("print targetTable")
@@ -252,6 +264,8 @@ const DiskVisualizer = (props) => {
       {console.log("VERY BEGGINING")}
       {console.log(props.selectedNode)}
       {console.log("print selectedNode")}
+      {console.log(props.output)}
+      {console.log("print output")}
       {ProgressBarsObject()}
     </Container>
   ) : (

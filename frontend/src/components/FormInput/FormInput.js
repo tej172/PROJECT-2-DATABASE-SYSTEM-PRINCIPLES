@@ -81,6 +81,7 @@ const FormInput = () => {
               data: response.data["data"],
               bestPlanId: response.data["best_plan_id"],
               status: response.data["status"],
+              schema_dict: response.data["schema_dict"],
               error: false,
             }));
             setShowSuccess(true);
@@ -116,6 +117,7 @@ const FormInput = () => {
       data: {},
       bestPlanId: 1,
       status: "",
+      schema_dict: {},
       error: false,
     });
   };
