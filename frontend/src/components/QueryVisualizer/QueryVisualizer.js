@@ -153,7 +153,7 @@ const QueryVisualizer = (props) => {
           >
             <h3 style={{ textAlign: "center" }}>Disk Visualization</h3>
             <p style={{ textAlign: "center" }}>
-              Comparing accessed rows to total rows in a table.
+              Visualizing Disk I/O cost in each operation 
             </p>
             <hr />
             <DiskVisualizer output={props.output} selectedNode = {selectedNode}/>

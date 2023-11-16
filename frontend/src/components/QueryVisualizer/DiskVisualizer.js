@@ -64,10 +64,10 @@ const DiskVisualizer = (props) => {
   };
 
 
-  const createProgressBar = ({planRows, totalRow, variant}) =>{
-    const now = Math.max((41517056 / 100) * 10, planRows*50);
+  const createProgressBar = ({cost, totalRow, variant}) =>{
+    const now = Math.max((totalRow / 100) * 10, cost);
     return(
-      <ProgressBar animated variant= {variant} max={41517056} label={planRows} now={now} />
+      <ProgressBar animated variant= {variant} max={totalRow} label={cost} now={now} />
     )
 
   }
@@ -112,7 +112,7 @@ const DiskVisualizer = (props) => {
           console.log("print targetInfo")
           console.log(targetInfo.hasOwnProperty("plan_rows"))
           console.log("checking boolean")
-          if (!targetInfo.hasOwnProperty("plan_rows")){
+          // if (!targetInfo.hasOwnProperty("plan_rows")){
             console.log("Entering first condition")
             const targetTable = targetInfo.node_type
             console.log(targetTable)
@@ -121,15 +121,22 @@ const DiskVisualizer = (props) => {
             console.log("print schema_dict")
             console.log(typeof(targetTable))
             console.log("print typeof(targetTable")
-            const totalRow = schema_dict[targetTable]
-            console.log(totalRow)
-            console.log("print totalRow")
+            if (schema_dict.hasOwnProperty(targetTable)){
+              var totalRow = schema_dict[targetTable]
+              console.log(totalRow)
+              console.log("print totalRow")
+
+            }else{
+              var totalRow = additional_info[sourceTarget].plan_rows
+            }
             const planRows = sourceInfo.plan_rows
             console.log(planRows)
             console.log("print planRows")
+            const cost = Math.ceil(sourceInfo.cost)
             const variant = "success"
             
-            additional_info[sourceIndex] = {"plan_rows" : sourceInfo.plan_rows, "total_rows": totalRow, "tables":targetTable};
+            
+            additional_info[sourceIndex] = {"plan_rows" : sourceInfo.plan_rows, "total_rows": totalRow, "tables":targetTable, "cost" : cost};
             
             console.log(selectedNode)
             console.log("print selectedNode")
@@ -145,8 +152,8 @@ const DiskVisualizer = (props) => {
                   <Table striped bordered hover>
                     <thead>
                       <tr>
-                        <th>Total Row</th>
-                        <th>Row Accessed</th>
+                        <th>Total Blocks</th>
+                        <th>I/O Cost </th>
                         <th>Table Accessed</th>
                         <th>Type of Access</th>
                       </tr>
@@ -154,17 +161,17 @@ const DiskVisualizer = (props) => {
                     <tbody>
                       <tr>
                         <td>{totalRow}</td>
-                        <td>{planRows}</td>
+                        <td>{cost}</td>
                         <td>{targetTable}</td>
                         <td>{sourceInfo.node_type}</td>
                       </tr>
                     </tbody>
                   </Table>
               
-                  {createProgressBar({planRows, totalRow, variant})}
+                  {createProgressBar({cost, totalRow, variant})}
                 </div>
               )
-            }
+            // }
           }
         }else{
           let barDisplayed = []
@@ -181,10 +188,12 @@ const DiskVisualizer = (props) => {
               var planRows = additional_info[edge].plan_rows
               var totalRow = additional_info[edge].total_rows
               var targetTable = additional_info[edge].tables
+              var cost = Math.ceil(additional_info[edge].cost)
               var variant = "warning"
             }else{
               var planRows = 0
               var totalRow = 0
+              var cost = 0
               var targetTable = "N.A"
               var variant = "warning"
             }
@@ -198,20 +207,20 @@ const DiskVisualizer = (props) => {
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>Total Row</th>
-                      <th>Row Accessed</th>
+                      <th>Total Blocks</th>
+                      <th>I/O Cost</th>
                       <th>Table Accessed</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>{totalRow}</td>
-                      <td>{planRows}</td>
+                      <td>{cost}</td>
                       <td>{targetTable}</td>
                     </tr>
                   </tbody>
                 </Table>
-                {createProgressBar({planRows, totalRow, variant})}
+                {createProgressBar({cost, totalRow, variant})}
                 <hr/>
               </div>
             )
@@ -219,8 +228,9 @@ const DiskVisualizer = (props) => {
 
           const planRows = sourceInfo.plan_rows
           const totalRow = multiplyList(prevRow)
+          const cost = Math.ceil(sourceInfo.cost);
           const variant = "danger"
-          additional_info[sourceIndex] = {"plan_rows" : planRows, "total_rows": totalRow, "tables": "N.A"};
+          additional_info[sourceIndex] = {"plan_rows" : planRows, "total_rows": totalRow, "tables": "N.A", "cost": cost};
 
           if (sourceIndex == selectedNode.id){
             return(
@@ -234,18 +244,18 @@ const DiskVisualizer = (props) => {
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>Total Row</th>
-                      <th>Row Accessed</th>
+                      <th>Total Blocks</th>
+                      <th>I/O Cost</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>{totalRow}</td>
-                      <td>{planRows}</td>
+                      <td>{cost}</td>
                     </tr>
                   </tbody>
                 </Table>
-                {createProgressBar({planRows, totalRow, variant})}
+                {createProgressBar({cost, totalRow, variant})}
   
               </div>
             )

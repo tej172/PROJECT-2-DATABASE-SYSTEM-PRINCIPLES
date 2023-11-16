@@ -205,11 +205,22 @@ used to get the qep, graph and explanation for a given query string
 def execute_plan(qep_sql_string):
     try:
         # Get the optimal qep
+        print("Im here")
         qep = query(qep_sql_string, explain=True)
+        print("can't execute?")
         schema_query = "SELECT tablename, pg_total_relation_size(format('%I.%I', schemaname, tablename)) AS total_length_of_tuples FROM pg_tables WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema' ORDER BY total_length_of_tuples DESC"
         schema_size = query(schema_query, ctid=True)
         schema_dict = dict(schema_size)
+
+        schema = ["customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier" ]
+        schema_dict_revised = {}
+        for table in schema:
+            query_res = query(f"SELECT pg_relation_size('{table}') / current_setting('block_size')::numeric AS block_size_bytes")
+            print(f"inside this for loop: {int(query_res[0])}")
+            schema_dict_revised[table] = int(query_res[0])
+        print(f"schema_dict_revised: {schema_dict_revised}")
         print(f"schema_dict: {schema_dict}")
+        print(f"can i get here?")
         #ctid = query(ctid_sql_string, ctid = True)
 
         print(print(f"qep: {qep}"))
@@ -228,7 +239,7 @@ def execute_plan(qep_sql_string):
         qep = json.loads(qep)
         #ctid = visualize_ctid(ctid_sql_string, ctid, schema)
 
-        return qep, graph, explanation, schema_dict #, ctid, schema
+        return qep, graph, explanation, schema_dict_revised #, ctid, schema
     except CustomError as e:
         raise CustomError(str(e))
     except:

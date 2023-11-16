@@ -60,6 +60,7 @@ def query(sql_string, explain=False, ctid = False):
         if explain:
             return data[0][0][0]
         elif ctid:
+            print(f"i am returning data : {data}")
             return data
         else:
             return data[0]
