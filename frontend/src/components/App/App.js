@@ -29,9 +29,7 @@ const App = () => {
           >
             these
           </a>{" "}
-          instructions. You can also select predicates to vary on the left,
-          which will allow the DBMS (Postgresql) to vary the selectivity of
-          those predicates to find alternate plans for comparison.
+          instructions.
         </p>
       </div>
       <hr />
