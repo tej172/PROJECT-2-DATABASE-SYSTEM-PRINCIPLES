@@ -267,20 +267,6 @@ const FormInput = () => {
         </Form.Row>
       </Form>
 
-      {/* Buttons for each query */}
-      {/* <div className={styles.queryButtons}>
-        {queries.map((queryObj, index) => (
-          <Button
-            key={index}
-            variant="outline-primary"
-            onClick={() => handleQueryButtonClick(queryObj.query)}
-            className={styles.queryButton}
-          >
-            {`Query ${index + 1}`}
-          </Button>
-        ))}
-      </div> */}
-
       <FormOutput output={output} />
     </>
   );

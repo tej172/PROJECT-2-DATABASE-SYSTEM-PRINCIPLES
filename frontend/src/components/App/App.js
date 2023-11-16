@@ -23,7 +23,7 @@ const App = () => {
           </a>{" "}
           dataset, and requires a database set up according to{" "}
           <a
-            href="https://github.com/chenningg/sql-query-optimizer#setting-up-postgresql-and-the-tpc-h-dataset"
+            href="https://github.com/tej172/PROJECT-2-DATABASE-SYSTEM-PRINCIPLES/tree/main"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -33,12 +33,6 @@ const App = () => {
           which will allow the DBMS (Postgresql) to vary the selectivity of
           those predicates to find alternate plans for comparison.
         </p>
-        {/* <p className={styles.headerText}>
-          Only allowable predicates have been added to the list, so don't be
-          surprised if some attributes are missing! Allowable predicates include
-          numeric and date attributes, and these predicates must each have a
-          histogram available in the database.
-        </p> */}
       </div>
       <hr />
       <FormInput />
