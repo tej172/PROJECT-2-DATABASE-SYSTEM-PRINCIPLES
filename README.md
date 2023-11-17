@@ -8,6 +8,22 @@
 # Project Overview
 Our project is dedicated to crafting an interactive data visualization tool and framework for comprehending the execution plans of SQL queries. With PostgreSQL as the underlying DBMS and the TPC-H dataset for dummy data, our software orchestrates a cohesive interaction between various components. These include a graphical user interface (GUI) coded in ReactJS (./frontend), a robust exploration module handling query processing and visualization, and the main execution orchestrator built using Flask (./api). This versatile and multi-dimensional approach ensures that users gain a holistic understanding of Query Execution Plans (QEPs).
 
+
+## Team Members
+Submitted By:
+- Joanne Christina Salimin (U21020304J)
+- Priscilla Celine Setiawan (U2123732G)
+- Tiwana Teg Singh (U2122816B)
+- Muhammad Rafi Adzikra Sujai (U2120731G)
+
+Submission Date: 17 November 2023
+
+Programming Language Utilized:
+- ReactJS (Frontend)
+- Python (with Flask) (Backend)
+
+GitHub Link: [Project Repository](https://github.com/tej172/PROJECT-2-DATABASE-SYSTEM-PRINCIPLES)
+
 ## Installation Guide
 The installation guide provides a step-by-step walkthrough for installing and running our software. Ensure your system meets the following prerequisites:
 
@@ -92,18 +108,3 @@ flask --app app run
 ## Viewing Project Results/Usage
 Once both the backend and frontend servers are running, open your default web browser and navigate to the specified URL (usually http://localhost:3000/) to interact with the GUI. Explore the visualizations, query results, and delve into the realm of SQL query execution made accessible through our group’s software. Additionally, a video guide on using the software, including functionality and a walkthrough, is available [here](https://youtu.be/ZfDLBhyjvj0).
 
-
-## Team Members
-Submitted By:
-- Joanne Christina Salimin (U21020304J)
-- Priscilla Celine Setiawan (U2123732G)
-- Tiwana Teg Singh (U2122816B)
-- Muhammad Rafi Adzikra Sujai (U2120731G)
-
-Submission Date: 17 November 2023
-
-Programming Language Utilized:
-- ReactJS (Frontend)
-- Python (with Flask) (Backend)
-
-GitHub Link: [Project Repository](https://github.com/tej172/PROJECT-2-DATABASE-SYSTEM-PRINCIPLES)
