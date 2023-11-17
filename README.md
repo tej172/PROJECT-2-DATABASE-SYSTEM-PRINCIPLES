@@ -91,3 +91,18 @@ flask --app app run
 
 ## Viewing Project Results/Usage
 Once both the backend and frontend servers are running, open your default web browser and navigate to the specified URL (usually http://localhost:3000/) to interact with the GUI. Explore the visualizations, query results, and delve into the realm of SQL query execution made accessible through our group’s software. Additionally, a video guide on using the software, including functionality and a walkthrough, is available [here](https://youtu.be/ZfDLBhyjvj0).
+
+Team Members
+Submitted By:
+
+Joanne Christina Salimin (U21020304J)
+Priscilla Celine Setiawan (U2123732G)
+Tiwana Teg Singh (U2122816B)
+Muhammad Rafi Adzikra Sujai (U2120731G)
+Submission Date: 17 November 2023
+
+Programming Language Utilized:
+
+ReactJS (Frontend)
+Python (with Flask) (Backend)
+GitHub Link: Project Repository
